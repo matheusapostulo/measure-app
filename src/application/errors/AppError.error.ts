@@ -1,16 +1,16 @@
 export namespace AppError {
     export class UnexpectedError extends Error {
-        private _message: string;
+        private _errorDescription: string;
         private _statusCode: number = 500;
 
         constructor(){
-            let message = "Internal Server Error";
-            super(message);
-            this._message = message;
+            let description = "Internal Server Error";
+            super(description);
+            this._errorDescription = description;
         }
 
-        get message(){
-            return this._message;
+        get errorDescription(){
+            return this._errorDescription;
         }
         
         get statusCode(){
