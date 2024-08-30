@@ -18,14 +18,13 @@ export default class TakeMeasurement {
             // Validating the base64 image
             let base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
             if(!base64regex.test(input.image)){
-                console.log("Invalid base64 image:", input.image);
                 return left(new RequiredParametersError("image"));
             }
             // We'll get this variable from an AI service
             const imageUrl = "https://www.google.com.br";
             const value = 123;
             // Checking if already exists a Measure with the same month and year
-            const measureAlreadyExistsInMonth = await this.connection.findMeasuresByDate(input.customer_code, input.measure_type);
+            const measureAlreadyExistsInMonth = await this.connection.findMeasuresByCustomerCodeAndType(input.customer_code, input.measure_type);
             if(measureAlreadyExistsInMonth.some(measure => {
                 return input.measure_datetime.getMonth() + 1 === measure.measure_datetime.getMonth() + 1
                 &&

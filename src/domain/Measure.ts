@@ -5,7 +5,7 @@ import RequiredParametersError from "../application/errors/RequiredParameters.er
 export default class Measure {
     constructor(
         readonly uuid: string, 
-        readonly value: number,
+        private value: number,
         readonly customerCode: string,
         readonly measureDateTime: Date,
         readonly measureType: typeMeasure,
@@ -21,6 +21,22 @@ export default class Measure {
         const uuid = crypto.randomUUID();
         const confirmed = false;
         return right(new Measure(uuid, value, customerCode, measureDateTime, measureType, confirmed, imageUrl));
+    }
+
+    confirmMeasure(){
+        this.confirmed = true;
+    }
+
+    updateValue(value: number){
+        this.value = value;
+    }
+
+    getValue(){
+        return this.value;
+    }
+
+    getConfirmed(){
+        return this.confirmed;
     }
 }
 

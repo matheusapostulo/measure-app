@@ -29,11 +29,34 @@ export default class MongooseClientAdapter implements DatabaseConnection {
         });
     }
 
-    async findMeasuresByDate(customerCode: string, measureType: string): Promise<Measure[]>{
+    async findMeasuresByCustomerCodeAndType(customerCode: string, measureType: string): Promise<Measure[]>{
         return await MeasureMongoose.find({
             customer_code: customerCode,
             measure_type: measureType
         });
+    }
+
+    async findMeasuresByCustomerCode(customerCode: string): Promise<any>{
+        return await MeasureMongoose.find({
+            customer_code: customerCode
+        });
+    }
+
+    async findUnique(id: string): Promise<any>{
+        return await MeasureMongoose.findOne({ 
+            _id: id 
+        });
+    }
+
+    async updateMeasure(entity: any): Promise<any>{
+        const {uuid, value,confirmed} = entity;
+        return await MeasureMongoose.findOneAndUpdate({
+            _id: uuid
+        }, {
+            value: value,
+            has_confirmed: confirmed,
+        });
+       
     }
 
     isConnectionOpen(): boolean {
