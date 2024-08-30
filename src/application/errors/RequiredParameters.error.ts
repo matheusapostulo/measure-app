@@ -4,7 +4,7 @@ export default class RequiredParametersError extends Error {
     private _statusCode: number = 400;
 
     constructor(parameter: string){
-        let description = `Parameter '${parameter}' is required`;
+        let description = `Parameter '${parameter}' is missing or invalid`;
         let errorCode = "INVALID_DATA";
         super(description);
         this._errorDescription = description;

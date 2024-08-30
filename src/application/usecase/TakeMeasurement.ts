@@ -3,18 +3,36 @@ import MeasureRepositoryProtocol from "../repository/MeasureRepositoryProtocol";
 import { AppError } from "../errors/AppError.error";
 import { Either, left, right } from "../errors/either";
 import RequiredParametersError from "../errors/RequiredParameters.error";
+import DatabaseConnection from "../protocols/database/DatabaseConnection";
+import { TakeMeasurementError } from "../errors/TakeMeasurement.error";
 
 export default class TakeMeasurement {
     
-    constructor(readonly measureRepository: MeasureRepositoryProtocol) {
+    constructor(readonly measureRepository: MeasureRepositoryProtocol, readonly connection: DatabaseConnection) {
         this.measureRepository = measureRepository;
+        this.connection = connection;
     }
     
     async execute(input: InputTakeMeasurementDto): Promise<ResponseTakeMeasurement>{
         try {
+            // Validating the base64 image
+            let base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
+            if(!base64regex.test(input.image)){
+                console.log("Invalid base64 image:", input.image);
+                return left(new RequiredParametersError("image"));
+            }
             // We'll get this variable from an AI service
             const imageUrl = "https://www.google.com.br";
             const value = 123;
+            // Checking if already exists a Measure with the same month and year
+            const measureAlreadyExistsInMonth = await this.connection.findMeasuresByDate(input.customer_code, input.measure_type);
+            if(measureAlreadyExistsInMonth.some(measure => {
+                return input.measure_datetime.getMonth() + 1 === measure.measure_datetime.getMonth() + 1
+                &&
+                input.measure_datetime.getFullYear() === measure.measure_datetime.getFullYear();
+            })) {
+                return left(new TakeMeasurementError.MeasureAlreadyExists)
+            }
             // Try to create a new Measure with the data provided
             const measureOrError = Measure.create(value, input.customer_code, input.measure_datetime, input.measure_type, imageUrl);
             // If the Measure creation fails, return an error
@@ -52,7 +70,8 @@ export type OutputTakeMeasurementDto = {
 
 export type ResponseTakeMeasurement = Either<
     AppError.UnexpectedError |
-    RequiredParametersError 
+    RequiredParametersError |
+    TakeMeasurementError.MeasureAlreadyExists
     ,
     OutputTakeMeasurementDto
 >;

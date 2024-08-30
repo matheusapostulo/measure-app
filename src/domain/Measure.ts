@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { Either, right } from "../application/errors/either";
+import { Either, left, right } from "../application/errors/either";
 import RequiredParametersError from "../application/errors/RequiredParameters.error";
 
 export default class Measure {
@@ -14,6 +14,10 @@ export default class Measure {
     ) { }
     
     static create(value: number, customerCode: string, measureDateTime: Date, measureType: typeMeasure, imageUrl: string): ResponseCreateMeasureDomain {
+        // Validate required parameters
+        if(!customerCode) return left(new RequiredParametersError("customer_code"));
+        if(!measureDateTime) return left(new RequiredParametersError("measure_datetime"));
+        if(!measureType) return left(new RequiredParametersError("measure_type"));
         const uuid = crypto.randomUUID();
         const confirmed = false;
         return right(new Measure(uuid, value, customerCode, measureDateTime, measureType, confirmed, imageUrl));
