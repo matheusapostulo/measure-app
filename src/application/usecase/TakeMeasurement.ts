@@ -71,8 +71,8 @@ export type OutputTakeMeasurementDto = {
 }
 
 export type ResponseTakeMeasurement = Either<
-    AppError.UnexpectedError |
     RequiredParametersError |
+    AppError.UnexpectedError |
     TakeMeasurementError.MeasureAlreadyExists
     ,
     OutputTakeMeasurementDto
