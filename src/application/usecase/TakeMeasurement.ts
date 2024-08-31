@@ -5,12 +5,15 @@ import { Either, left, right } from "../errors/either";
 import RequiredParametersError from "../errors/RequiredParameters.error";
 import DatabaseConnection from "../protocols/database/DatabaseConnection";
 import { TakeMeasurementError } from "../errors/TakeMeasurement.error";
+import GeminiAiServiceProtocol from "../protocols/GeminiAIServiceProtocol";
 
 export default class TakeMeasurement {
     
-    constructor(readonly measureRepository: MeasureRepositoryProtocol, readonly connection: DatabaseConnection) {
-        this.measureRepository = measureRepository;
-        this.connection = connection;
+    constructor(
+        readonly measureRepository: MeasureRepositoryProtocol, 
+        readonly connection: DatabaseConnection,
+        readonly geminiAIService: GeminiAiServiceProtocol    
+    ) {
     }
     
     async execute(input: InputTakeMeasurementDto): Promise<ResponseTakeMeasurement>{
@@ -22,7 +25,7 @@ export default class TakeMeasurement {
             }
             // We'll get this variable from an AI service
             const imageUrl = "https://www.google.com.br";
-            const value = 123;
+            const value = await this.geminiAIService.getMeasureValue(input.image);
             // Checking if already exists a Measure with the same month and year
             const measureAlreadyExistsInMonth = await this.connection.findMeasuresByCustomerCodeAndType(input.customer_code, input.measure_type);
             if(measureAlreadyExistsInMonth.some(measure => {

@@ -6,12 +6,15 @@ import MeasureRepositoryDatabase from "../../src/infra/repository/MeasureReposit
 import { typeMeasure } from "../../src/domain/Measure";
 import { ConfirmMeasurementError } from "../../src/application/errors/ConfirmMeasurement.error";
 import InvalidDataError from "../../src/application/errors/InvalidDataError.error";
+import GeminiAIService from "../../src/infra/services/GeminiAIService";
+const fs = require('fs')
 
 describe("Should confirm measurements", () => {
     it("Should confirm a measurement with a new value", async () => {
         const connection = await MongooseClientAdapter.create();
         const measureRepository = new MeasureRepositoryDatabase(connection);
-        const takeMeasurement = new TakeMeasurement(measureRepository, connection);
+        const geminiAIService = new GeminiAIService();
+        const takeMeasurement = new TakeMeasurement(measureRepository, connection, geminiAIService);
         const confirmMeasurement = new ConfirmMeasurement(connection, measureRepository);
 
         // Creating a measurement to confirm
@@ -19,7 +22,7 @@ describe("Should confirm measurements", () => {
         const randomCustomerCode = randomBytes(5).toString("hex");
 
         const inputTakeMeasurement = {
-            image: "U29tZVN0cmluZ09idmlvdXNseU5vdEJhc2U2NEVuY29kZWQ=",
+            image: fs.readFileSync("./base64.txt").toString(),
             customer_code: randomCustomerCode,
             measure_datetime: new Date(),
             measure_type: typeMeasure.WATER
@@ -66,7 +69,8 @@ describe("Should confirm measurements", () => {
     it("Should throw an error when the measurement is already confirmed", async () => {
         const connection = await MongooseClientAdapter.create();
         const measureRepository = new MeasureRepositoryDatabase(connection);
-        const takeMeasurement = new TakeMeasurement(measureRepository, connection);
+        const geminiAIService = new GeminiAIService();
+        const takeMeasurement = new TakeMeasurement(measureRepository, connection, geminiAIService);
         const confirmMeasurement = new ConfirmMeasurement(connection, measureRepository);
 
         // Creating a measurement to confirm
@@ -74,7 +78,7 @@ describe("Should confirm measurements", () => {
         const randomCustomerCode = randomBytes(5).toString("hex");
 
         const inputTakeMeasurement = {
-            image: "U29tZVN0cmluZ09idmlvdXNseU5vdEJhc2U2NEVuY29kZWQ=",
+            image: fs.readFileSync("./base64.txt").toString(),
             customer_code: randomCustomerCode,
             measure_datetime: new Date(),
             measure_type: typeMeasure.WATER

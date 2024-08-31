@@ -4,19 +4,21 @@ import MeasureRepositoryDatabase from "../../src/infra/repository/MeasureReposit
 import MongooseClientAdapter from "../../src/infra/database/MongooseClientAdapter";
 import { TakeMeasurementError } from "../../src/application/errors/TakeMeasurement.error";
 import { randomBytes } from "crypto";
-
+import GeminiAIService from "../../src/infra/services/GeminiAIService";
+const fs = require('fs')
 
 describe("Should do measurements", () => {
     it("Should do a Water measurement", async () => {
         const connection = await MongooseClientAdapter.create();
         const measureRepository = new MeasureRepositoryDatabase(connection);
-        const takeMeasurement = new TakeMeasurement(measureRepository, connection);
+        const geminiAIService = new GeminiAIService();
+        const takeMeasurement = new TakeMeasurement(measureRepository, connection, geminiAIService);
 
         // Creating a random customer code to avoiding conflicts
         const randomCustomerCode = randomBytes(5).toString("hex");
 
         const inputTakeMeasurement = {
-            image: "U29tZVN0cmluZ09idmlvdXNseU5vdEJhc2U2NEVuY29kZWQ=",
+            image:  fs.readFileSync("./base64.txt").toString(),
             customer_code: randomCustomerCode,
             measure_datetime: new Date(),
             measure_type: typeMeasure.WATER
@@ -37,7 +39,8 @@ describe("Should do measurements", () => {
     it("Should throw an error when there is a measurement with the same month and year", async () => {
         const connection = await MongooseClientAdapter.create();
         const measureRepository = new MeasureRepositoryDatabase(connection);
-        const takeMeasurement = new TakeMeasurement(measureRepository, connection);
+        const geminiAIService = new GeminiAIService();
+        const takeMeasurement = new TakeMeasurement(measureRepository, connection, geminiAIService);
 
         // Creating a date for the next month
         const currentDate = new Date();
@@ -49,7 +52,7 @@ describe("Should do measurements", () => {
 
         // Creating the first measurement
         const inputTakeMeasurement = {
-            image: "U29tZVN0cmluZ09idmlvdXNseU5vdEJhc2U2NEVuY29kZWQ=",
+            image: fs.readFileSync("./base64.txt").toString(),
             customer_code: randomCustomerCode,
             measure_datetime: nextMonth,
             measure_type: typeMeasure.WATER
@@ -58,7 +61,7 @@ describe("Should do measurements", () => {
 
         // Creating the second measurement with the same month and year
         const inputTakeMeasurementSameMonth = {
-            image: "U29tZVN0cmluZ09idmlvdXNseU5vdEJhc2U2NEVuY29kZWQ=",
+            image: fs.readFileSync("./base64.txt").toString(),
             customer_code: randomCustomerCode,
             measure_datetime: inputTakeMeasurement.measure_datetime,
             measure_type: typeMeasure.WATER
@@ -67,7 +70,7 @@ describe("Should do measurements", () => {
 
         // Creating an third measurement with the same month and year, but with different type
         const inputTakeMeasurementSameMonthDifferentTypeMeasure = {
-            image: "U29tZVN0cmluZ09idmlvdXNseU5vdEJhc2U2NEVuY29kZWQ=",
+            image: fs.readFileSync("./base64.txt").toString(),
             customer_code: randomCustomerCode,
             measure_datetime: inputTakeMeasurement.measure_datetime,
             measure_type: typeMeasure.GAS

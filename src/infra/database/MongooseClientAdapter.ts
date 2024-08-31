@@ -1,17 +1,18 @@
 import DatabaseConnection from '../../application/protocols/database/DatabaseConnection';
 import Measure from '../../domain/Measure';
+import env from '../../env';
 import { MeasureMongoose } from './schemas/MeasureSchema';
 import mongoose from "mongoose";
 
 export default class MongooseClientAdapter implements DatabaseConnection {
     connection: any;
 
-    constructor(connection){
+    constructor(connection: any){
         this.connection = connection;
     }
 
     static async create() {
-        const connection = await mongoose.connect("mongodb://admin:password@localhost:27017/measures?authSource=admin");
+        const connection = await mongoose.connect(env.DATABASE_URL);
         return new MongooseClientAdapter(connection);
     }
 
